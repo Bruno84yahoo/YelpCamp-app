@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const ejsMate = require("ejs-mate");
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
+const res = require('express/lib/response');
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp');
 const db = mongoose.connection;
@@ -38,10 +39,14 @@ app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new');
 })
 
-app.post('/campgrounds', async (req, res) => {
+app.post('/campgrounds', async (req, res, next) => {
+    try {
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`)
+    } catch (e) {
+        next(e)
+    }
 })
 
 
@@ -69,7 +74,9 @@ app.delete('/campgrounds/:id', async (req, res) => {
 })
 
 
-
+app.use((err, req, res, next)=> {
+    res.send("oh boy got an error")
+})
 
 app.listen(3000, () => {
     console.log('Serving on port 3000!!!')
